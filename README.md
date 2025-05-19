@@ -1,14 +1,38 @@
 # DataAnalytics-Assessment
 Data Analyst Assessment
 
-Assessment Q1: High-Value Customers with Multiple Products
+
+##  Database Overview
+
+**Database Name:** `adashi_staging`  
 
 
-Objective
+###  Key Tables Used
+
+| Table Name                | Description |
+|--------------------------|-------------|
+| `users_customuser`       | Contains customer demographic and registration data. |
+| `plans_plan`             | Details of user plans — including both savings (`is_regular_savings`) and investment (`is_a_fund`) plans. |
+| `savings_savingsaccount` | Records of confirmed deposit transactions linked to plans. |
+| `withdrawals_withdrawal` | Records of withdrawal transactions *(not used in this assessment)*. |
+
+---
+
+##  Assessment Objectives & Solutions
+
+Each SQL solution is modularized using Common Table Expressions (CTEs), meaningful aliases, and clear formatting. All monetary values stored in **kobo** are converted to **naira** by dividing by 100.
+
+---
+
+##  Assessment Q1: High-Value Customers with Multiple Products
+
+
+##  Objective
+
 Identify customers who have at least one funded savings plan and at least one funded investment plan, as part of a cross-selling opportunity. Additionally, calculate the total value of deposits made by each customer (converted from kobo to naira), and sort the results in descending order of total deposits.
 
 
-Approach
+##  Approach
 
 Filter for Funded Plans
 I guessed that a plan is considered funded if it has at least one associated deposit in the savings_savingsaccount table.
@@ -28,7 +52,7 @@ Sorted by total_deposits in descending order to surface the highest value custom
 
 
 
-Query Techniques Used
+##  Query Techniques Used
 
 Common Table Expressions (CTEs) for modular query structure
 JOIN operations across multiple tables
@@ -39,7 +63,7 @@ ROUND() and arithmetic conversion for currency formatting
 
 
 
-Challenges
+##  Challenges
 
 Clarifying the definition of a “funded” plan: The instructions did not explicitly define whether a plan needed just one transaction or a non-zero confirmed_amount to be considered funded.
 I addressed this by assuming that any associated deposit record qualifies a plan as funded.
@@ -50,39 +74,39 @@ I addressed this by assuming that any associated deposit record qualifies a plan
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Assessment Q2: Transaction Frequency Analysis
+##  Assessment Q2: Transaction Frequency Analysis
 
 
-Objective
+##  Objective
 
 Segment customers based on their average number of transactions per month. This classification enables the business to identify frequent users for targeted marketing or customer engagement.
 
 
-Approach
+##  Approach
 
-Calculate average transactions per month
+##  Calculate average transactions per month
 First, I calculated the total number of savings transactions made by each customer using a COUNT on savings_savingsaccount.
 Then I determined each customer's account tenure in months using TIMESTAMPDIFF(MONTH, date_joined, CURRENT_DATE()).
 To avoid division-by-zero errors for recent signups, I used GREATEST(..., 1) to enforce a minimum tenure of 1 month.
 The average monthly transaction rate is calculated by dividing total transactions by tenure.
 
-Categorize customers by frequency
+##  Categorize customers by frequency
 I classified each customer into one of three buckets based on their average monthly transaction rate:
 High Frequency: 10 or more transactions/month
 Medium Frequency: 3 to 9 transactions/month
 Low Frequency: 2 or fewer transactions/month
 
-Aggregate results
+##  Aggregate results
 The final output groups customers by their frequency category.
 For each group, I showed:
 Total number of customers in that category
 Average transaction frequency (rounded to 1 decimal)
 
-Ordering and readability
+##  Ordering and readability
 Results are sorted using FIELD(...) to ensure the categories appear in a logical order: High → Medium → Low.
 
 
-Query Techniques Used
+##  Query Techniques Used
 
 WITH Common Table Expressions (CTEs) for modular organization
 TIMESTAMPDIFF() to compute account age
@@ -96,15 +120,15 @@ ORDER BY FIELD() for custom sorting
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
  
-Assessment Q3: Account Inactivity Alert
+##  Assessment Q3: Account Inactivity Alert
 
 
-Objective:
+##  Objective:
 
 Identify active savings or investment plans that have had no deposit transactions in the last 365 days. This allows the business to flag dormant accounts for further action.
 
 
-Approach:
+##  Approach:
 
 To solve this, I focused on plans classified as either savings or investments. 
 
@@ -117,7 +141,7 @@ I then calculated the number of days since the last deposit by subtracting this 
 Finally, I filtered for plans that have been inactive for more than 365 days or have never had deposits.
 
 
-Query Techniques Used:
+##  Query Techniques Used:
 
 LEFT JOIN: Ensured all active plans are included, even if they have no transactions.
 Aggregate function (MAX): Used to find the latest transaction date per plan.
@@ -127,7 +151,7 @@ Date functions (DATEDIFF, CURDATE): Calculated inactivity period.
 Grouping (GROUP BY): Grouped data by plan to aggregate transactions correctly.
 
 
-Challenges:
+##  Challenges:
 
 Ensuring plans with no deposits were included required using a LEFT JOIN and handling NULL values correctly in the aggregation and filtering steps.
 Accurately differentiating between savings and investment plans was important for clarity and was handled with a CASE statement.
@@ -138,10 +162,10 @@ Handling date arithmetic carefully to avoid errors, especially when the last tra
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------   
 
-Assessment Q4: Customer Lifetime Value (CLV) Estimation
+##  Assessment Q4: Customer Lifetime Value (CLV) Estimation
 
 
-Objective
+##  Objective
 
 Estimate the Customer Lifetime Value (CLV) for each customer using their total transaction value and the duration of their account activity. The model is simplified and based on the formula:
 CLV = (total_transactions / tenure_months) * 12 * avg_profit_per_transaction
@@ -150,7 +174,7 @@ Tenure is calculated in months since the customer's signup (date_joined)
 Transaction values are in kobo, and need to be converted to naira (divide by 100)
 
 
-Approach
+##  Approach
 
 Calculate Tenure
 Used TIMESTAMPDIFF(MONTH, u.date_joined, CURDATE()) to compute the number of months between the account signup date and the current date.
@@ -174,7 +198,7 @@ estimated_clv
 Results are sorted by estimated_clv in descending order, surfacing the highest-value customers.
 
 
-Query Techniques Used
+##  Query Techniques Used
 
 Date calculations using TIMESTAMPDIFF
 Aggregate functions (SUM, ROUND)
@@ -183,7 +207,7 @@ Table joins betIen users_customuser and savings_savingsaccount
 Conversion of currency from kobo to naira
 
 
-Challenges
+##  Challenges
 
 Ensuring that the tenure_months did not result in a division by zero when the account was created very recently (e.g., current month).
 This was resolved by using NULLIF(tenure_months, 0) within the formula.
@@ -191,3 +215,11 @@ This was resolved by using NULLIF(tenure_months, 0) within the formula.
 Accurately mapping deposit transactions to customers, since deposits reside in the savings_savingsaccount table, but customer info resides in users_customuser.
 This was handled with a JOIN based on the owner_id.
 
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+##  Execution Environment
+
+- **SQL Engine:** MySQL 8.0  
+- **Development Tool:** MySQL Workbench  
+- **Database Used:** `adashi_staging`  
+- **Tested On:** Sample dataset from assessment
