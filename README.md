@@ -84,25 +84,25 @@ Segment customers based on their average number of transactions per month. This 
 
 ##  Approach
 
-##  Calculate average transactions per month
+Calculate average transactions per month
 First, I calculated the total number of savings transactions made by each customer using a COUNT on savings_savingsaccount.
 Then I determined each customer's account tenure in months using TIMESTAMPDIFF(MONTH, date_joined, CURRENT_DATE()).
 To avoid division-by-zero errors for recent signups, I used GREATEST(..., 1) to enforce a minimum tenure of 1 month.
 The average monthly transaction rate is calculated by dividing total transactions by tenure.
 
-##  Categorize customers by frequency
+Categorize customers by frequency
 I classified each customer into one of three buckets based on their average monthly transaction rate:
 High Frequency: 10 or more transactions/month
 Medium Frequency: 3 to 9 transactions/month
 Low Frequency: 2 or fewer transactions/month
 
-##  Aggregate results
+Aggregate results
 The final output groups customers by their frequency category.
 For each group, I showed:
 Total number of customers in that category
 Average transaction frequency (rounded to 1 decimal)
 
-##  Ordering and readability
+Ordering and readability
 Results are sorted using FIELD(...) to ensure the categories appear in a logical order: High → Medium → Low.
 
 
