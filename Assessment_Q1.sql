@@ -5,20 +5,22 @@
 
 USE adashi_staging;
 
--- Step 1: Retrieve customers with savings plans
+-- Step 1: Retrieve customers with funded savings plans
 WITH savings AS (
-    SELECT owner_id, COUNT(DISTINCT id) AS savings_count
-    FROM plans_plan
-    WHERE is_regular_savings = 1
-    GROUP BY owner_id
+    SELECT p.owner_id, COUNT(DISTINCT p.id) AS savings_count
+    FROM plans_plan p
+    JOIN savings_savingsaccount s ON s.plan_id = p.id
+    WHERE p.is_regular_savings = 1
+    GROUP BY p.owner_id
 ),
 
--- Step 2: Retrieve customers with investment plans
+-- Step 2: Retrieve customers with funded investment plans
 investment AS (
-    SELECT owner_id, COUNT(DISTINCT id) AS investment_count
-    FROM plans_plan
-    WHERE is_a_fund = 1
-    GROUP BY owner_id
+    SELECT p.owner_id, COUNT(DISTINCT p.id) AS investment_count
+    FROM plans_plan p
+    JOIN savings_savingsaccount s ON s.plan_id = p.id
+    WHERE p.is_a_fund = 1
+    GROUP BY p.owner_id
 ),
 
 -- Step 3: Calculate total deposit amount per customer
